@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SonicFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+  <!-- Ambient background -->
+  <div class="bg-canvas">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="noise"></div>
+  </div>
+
+  <!-- SETUP SCREEN -->
+  <div class="screen" id="setupScreen">
+    <div class="setup-card" id="setupCard">
+      <div class="logo-mark">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="18" fill="#1db954" fill-opacity="0.15"/>
+          <path d="M10 18c2.5-3 5-4.5 8-4.5s5.5 1.5 8 4.5" stroke="#1db954" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M12.5 22c1.8-2 3.3-3 5.5-3s3.7 1 5.5 3" stroke="#1db954" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="18" cy="26" r="2" fill="#1db954"/>
+        </svg>
+      </div>
+      <h1 class="logo-text">Sonic<span>Flow</span></h1>
+      <p class="setup-sub">Connect your Spotify account to begin</p>
+
+      <div class="input-group">
+        <label class="input-label">Client ID</label>
+        <input type="text" id="clientId" class="input-field" placeholder="Paste your Spotify Client ID"/>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Client Secret</label>
+        <input type="password" id="clientSecret" class="input-field" placeholder="Paste your Spotify Client Secret"/>
+      </div>
+
+      <button class="btn-primary" id="connectBtn" onclick="connect()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.305-1.76-8.786-.963-.335.077-.67-.133-.746-.469-.077-.336.132-.67.469-.747 3.808-.870 7.076-.496 9.713 1.115.293.18.386.563.207.857zm1.223-2.722c-.226.367-.706.482-1.072.257-2.687-1.652-6.785-2.131-9.965-1.166-.413.127-.848-.105-.975-.517-.127-.413.104-.848.517-.975 3.632-1.102 8.147-.568 11.238 1.328.366.226.48.707.257 1.073zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.493.15-1.016-.129-1.166-.623-.149-.495.13-1.016.623-1.165 3.552-1.08 9.46-.87 13.19 1.338.445.264.590.838.327 1.282-.264.443-.838.59-1.282.327z"/></svg>
+        Connect to Spotify
+      </button>
+
+      <p class="setup-hint">
+        Get your credentials at
+        <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com</a>
+      </p>
+
+      <div class="error-msg" id="setupError"></div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="screen hidden" id="appScreen">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="28" height="28" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="18" fill="#1db954" fill-opacity="0.15"/>
+          <path d="M10 18c2.5-3 5-4.5 8-4.5s5.5 1.5 8 4.5" stroke="#1db954" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M12.5 22c1.8-2 3.3-3 5.5-3s3.7 1 5.5 3" stroke="#1db954" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="18" cy="26" r="2" fill="#1db954"/>
+        </svg>
+        <span class="sidebar-logo-text">SonicFlow</span>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" onclick="showView('search')" id="nav-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Search
+        </button>
+        <button class="nav-item" onclick="showView('trending')" id="nav-trending">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          Trending
+        </button>
+        <button class="nav-item" onclick="showView('liked')" id="nav-liked">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Liked Songs
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="btn-disconnect" onclick="disconnect()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Disconnect
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- SEARCH VIEW -->
+      <div class="view" id="view-search">
+        <div class="view-header">
+          <h2 class="view-title">Search</h2>
+          <div class="search-bar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="Songs, artists, albums…" oninput="onSearchInput(this.value)"/>
+            <div class="search-loading hidden" id="searchSpinner">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+        <div class="tracks-grid" id="searchResults">
+          <div class="empty-state">
+            <div class="empty-icon">🎵</div>
+            <p>Start typing to discover music</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRENDING VIEW -->
+      <div class="view hidden" id="view-trending">
+        <div class="view-header">
+          <h2 class="view-title">Trending Now</h2>
+          <p class="view-sub">Top tracks on Spotify</p>
+        </div>
+        <div class="tracks-list" id="trendingList">
+          <div class="loading-tracks">
+            <div class="spinner"></div>
+            <span>Loading trending tracks…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIKED VIEW -->
+      <div class="view hidden" id="view-liked">
+        <div class="view-header">
+          <h2 class="view-title">Liked Songs</h2>
+          <p class="view-sub" id="likedCount">0 songs saved</p>
+        </div>
+        <div class="tracks-list" id="likedList">
+          <div class="empty-state">
+            <div class="empty-icon">💚</div>
+            <p>Songs you like will appear here</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- PLAYER BAR -->
+  <div class="player-bar hidden" id="playerBar">
+    <div class="player-track">
+      <img class="player-art" id="playerArt" src="" alt=""/>
+      <div class="player-info">
+        <div class="player-title" id="playerTitle">—</div>
+        <div class="player-artist" id="playerArtist">—</div>
+      </div>
+      <button class="like-btn-player" id="likeBtn" onclick="toggleLikeCurrent()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+    </div>
+    <div class="player-controls">
+      <button class="ctrl-btn" onclick="prevTrack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()">
+        <svg id="playIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="pauseIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" class="hidden"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      </button>
+      <button class="ctrl-btn" onclick="nextTrack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+      </button>
+    </div>
+    <div class="player-progress">
+      <span class="time-label" id="currentTime">0:00</span>
+      <div class="progress-track" id="progressTrack" onclick="seekTo(event)">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-thumb" id="progressThumb"></div>
+      </div>
+      <span class="time-label" id="totalTime">0:30</span>
+    </div>
+    <div class="player-vol">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" oninput="setVolume(this.value)"/>
+    </div>
+    <div class="preview-badge">30s preview</div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script>
+    // ─── STATE ───────────────────────────────────────────────────────────────
+    let token = null;
+    let currentTrack = null;
+    let queue = [];
+    let queueIndex = 0;
+    let audio = new Audio();
+    let isPlaying = false;
+    let likedSongs = JSON.parse(localStorage.getItem('sonicflow_liked') || '[]');
+    let searchDebounce = null;
+
+    audio.volume = 0.8;
+
+    // ─── AUTH ─────────────────────────────────────────────────────────────────
+    async function connect() {
+      const id = document.getElementById('clientId').value.trim();
+      const secret = document.getElementById('clientSecret').value.trim();
+      const errEl = document.getElementById('setupError');
+      errEl.textContent = '';
+
+      if (!id || !secret) {
+        errEl.textContent = 'Please fill in both Client ID and Client Secret.';
+        return;
+      }
+
+      const btn = document.getElementById('connectBtn');
+      btn.textContent = 'Connecting…';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + btoa(id + ':' + secret)
+          },
+          body: 'grant_type=client_credentials'
+        });
+        const data = await res.json();
+        if (data.access_token) {
+          token = data.access_token;
+          localStorage.setItem('sf_id', id);
+          localStorage.setItem('sf_secret', secret);
+          showApp();
+        } else {
+          errEl.textContent = 'Invalid credentials. Check your Client ID and Secret.';
+          btn.textContent = 'Connect to Spotify';
+          btn.disabled = false;
+        }
+      } catch(e) {
+        errEl.textContent = 'Connection failed. Check your internet.';
+        btn.textContent = 'Connect to Spotify';
+        btn.disabled = false;
+      }
+    }
+
+    async function refreshToken() {
+      const id = localStorage.getItem('sf_id');
+      const secret = localStorage.getItem('sf_secret');
+      if (!id || !secret) return false;
+      try {
+        const res = await fetch('https://accounts.spotify.com/api/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + btoa(id + ':' + secret)
+          },
+          body: 'grant_type=client_credentials'
+        });
+        const data = await res.json();
+        if (data.access_token) { token = data.access_token; return true; }
+      } catch(e) {}
+      return false;
+    }
+
+    function disconnect() {
+      localStorage.removeItem('sf_id');
+      localStorage.removeItem('sf_secret');
+      token = null;
+      stopAudio();
+      document.getElementById('appScreen').classList.add('hidden');
+      document.getElementById('setupScreen').classList.remove('hidden');
+      document.getElementById('playerBar').classList.add('hidden');
+      document.getElementById('connectBtn').textContent = 'Connect to Spotify';
+      document.getElementById('connectBtn').disabled = false;
+      document.getElementById('clientId').value = '';
+      document.getElementById('clientSecret').value = '';
+    }
+
+    // ─── SHOW APP ─────────────────────────────────────────────────────────────
+    function showApp() {
+      document.getElementById('setupScreen').classList.add('hidden');
+      document.getElementById('appScreen').classList.remove('hidden');
+      showView('search');
+      loadTrending();
+    }
+
+    async function autoConnect() {
+      const id = localStorage.getItem('sf_id');
+      const secret = localStorage.getItem('sf_secret');
+      if (id && secret) {
+        document.getElementById('clientId').value = id;
+        document.getElementById('clientSecret').value = secret;
+        const ok = await refreshToken();
+        if (ok) showApp();
+      }
+    }
+
+    // ─── VIEWS ────────────────────────────────────────────────────────────────
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('view-' + name).classList.remove('hidden');
+      document.getElementById('nav-' + name).classList.add('active');
+
+      if (name === 'liked') renderLiked();
+    }
+
+    // ─── SPOTIFY API ─────────────────────────────────────────────────────────
+    async function spotifyGet(url) {
+      let res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.status === 401) {
+        const ok = await refreshToken();
+        if (ok) res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+      }
+      return res.json();
+    }
+
+    // ─── SEARCH ───────────────────────────────────────────────────────────────
+    function onSearchInput(val) {
+      clearTimeout(searchDebounce);
+      if (!val.trim()) {
+        document.getElementById('searchResults').innerHTML = `
+          <div class="empty-state"><div class="empty-icon">🎵</div><p>Start typing to discover music</p></div>`;
+        return;
+      }
+      document.getElementById('searchSpinner').classList.remove('hidden');
+      searchDebounce = setTimeout(() => search(val), 500);
+    }
+
+    async function search(q) {
+      try {
+        const data = await spotifyGet(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track&limit=20`);
+        document.getElementById('searchSpinner').classList.add('hidden');
+        const tracks = data.tracks?.items || [];
+        renderGrid(tracks, 'searchResults');
+        queue = tracks.filter(t => t.preview_url);
+        queueIndex = 0;
+      } catch(e) {
+        document.getElementById('searchSpinner').classList.add('hidden');
+      }
+    }
+
+    // ─── TRENDING ─────────────────────────────────────────────────────────────
+    async function loadTrending() {
+      try {
+        // Use a popular playlist as trending proxy
+        const data = await spotifyGet(`https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF/tracks?limit=25`);
+        const tracks = (data.items || []).map(i => i.track).filter(Boolean);
+        renderList(tracks, 'trendingList');
+        queue = tracks.filter(t => t.preview_url);
+        queueIndex = 0;
+      } catch(e) {
+        document.getElementById('trendingList').innerHTML = '<div class="empty-state"><div class="empty-icon">😕</div><p>Could not load trending tracks</p></div>';
+      }
+    }
+
+    // ─── RENDER ───────────────────────────────────────────────────────────────
+    function renderGrid(tracks, containerId) {
+      const el = document.getElementById(containerId);
+      if (!tracks.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><p>No results found</p></div>`;
+        return;
+      }
+      el.innerHTML = tracks.map((t, i) => trackCardHTML(t, i)).join('');
+    }
+
+    function renderList(tracks, containerId) {
+      const el = document.getElementById(containerId);
+      if (!tracks.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">🎵</div><p>No tracks</p></div>`;
+        return;
+      }
+      el.innerHTML = tracks.map((t, i) => trackRowHTML(t, i)).join('');
+    }
+
+    function trackCardHTML(t, i) {
+      const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '';
+      const artist = t.artists?.map(a => a.name).join(', ') || '';
+      const hasPreview = !!t.preview_url;
+      const isLiked = likedSongs.some(s => s.id === t.id);
+      return `
+        <div class="track-card ${!hasPreview ? 'no-preview' : ''}" style="animation-delay:${i * 0.04}s">
+          <div class="track-card-art" onclick="${hasPreview ? `playTrack('${t.id}', ${JSON.stringify(JSON.stringify(t))})` : ''}">
+            <img src="${img}" alt="${escHtml(t.name)}" loading="lazy"/>
+            ${hasPreview ? `<div class="play-overlay"><svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>` : '<div class="no-preview-badge">No preview</div>'}
+          </div>
+          <div class="track-card-info">
+            <div class="track-card-title">${escHtml(t.name)}</div>
+            <div class="track-card-artist">${escHtml(artist)}</div>
+          </div>
+          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${t.id}', event)" title="${isLiked ? 'Unlike' : 'Like'}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>`;
+    }
+
+    function trackRowHTML(t, i) {
+      const img = t.album?.images?.[2]?.url || t.album?.images?.[0]?.url || '';
+      const artist = t.artists?.map(a => a.name).join(', ') || '';
+      const hasPreview = !!t.preview_url;
+      const isLiked = likedSongs.some(s => s.id === t.id);
+      const dur = t.duration_ms ? msToTime(t.duration_ms) : '--:--';
+      return `
+        <div class="track-row ${!hasPreview ? 'no-preview' : ''}" style="animation-delay:${i * 0.03}s" onclick="${hasPreview ? `playTrack('${t.id}', ${JSON.stringify(JSON.stringify(t))})` : ''}">
+          <div class="track-row-num">${i + 1}</div>
+          <img class="track-row-art" src="${img}" alt="" loading="lazy"/>
+          <div class="track-row-info">
+            <div class="track-row-title">${escHtml(t.name)}</div>
+            <div class="track-row-artist">${escHtml(artist)}</div>
+          </div>
+          ${!hasPreview ? '<span class="no-preview-tag">No preview</span>' : ''}
+          <div class="track-row-dur">${dur}</div>
+          <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${t.id}', event)" title="${isLiked ? 'Unlike' : 'Like'}">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </button>
+        </div>`;
+    }
+
+    // ─── PLAYBACK ─────────────────────────────────────────────────────────────
+    function playTrack(id, trackJson) {
+      const t = JSON.parse(trackJson);
+      if (!t.preview_url) { showToast('No preview available for this track'); return; }
+
+      currentTrack = t;
+      const idx = queue.findIndex(q => q.id === id);
+      if (idx !== -1) queueIndex = idx;
+
+      stopAudio();
+      audio.src = t.preview_url;
+      audio.play();
+      isPlaying = true;
+      updatePlayerUI(t);
+      updatePlayBtn();
+    }
+
+    function togglePlay() {
+      if (!currentTrack) return;
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+      } else {
+        audio.play();
+        isPlaying = true;
+      }
+      updatePlayBtn();
+    }
+
+    function prevTrack() {
+      if (!queue.length) return;
+      queueIndex = (queueIndex - 1 + queue.length) % queue.length;
+      playTrack(queue[queueIndex].id, JSON.stringify(queue[queueIndex]));
+    }
+
+    function nextTrack() {
+      if (!queue.length) return;
+      queueIndex = (queueIndex + 1) % queue.length;
+      playTrack(queue[queueIndex].id, JSON.stringify(queue[queueIndex]));
+    }
+
+    function stopAudio() {
+      audio.pause();
+      audio.currentTime = 0;
+      isPlaying = false;
+    }
+
+    function setVolume(v) { audio.volume = v / 100; }
+
+    function seekTo(e) {
+      if (!audio.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const pct = (e.clientX - rect.left) / rect.width;
+      audio.currentTime = pct * audio.duration;
+    }
+
+    audio.addEventListener('ended', nextTrack);
+    audio.addEventListener('timeupdate', () => {
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressThumb').style.left = pct + '%';
+      document.getElementById('currentTime').textContent = secToTime(audio.currentTime);
+      document.getElementById('totalTime').textContent = secToTime(audio.duration);
+    });
+
+    function updatePlayerUI(t) {
+      const img = t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '';
+      const artist = t.artists?.map(a => a.name).join(', ') || '';
+      document.getElementById('playerArt').src = img;
+      document.getElementById('playerTitle').textContent = t.name;
+      document.getElementById('playerArtist').textContent = artist;
+      document.getElementById('playerBar').classList.remove('hidden');
+      document.getElementById('playerBar').classList.add('visible');
+
+      // Update like button state
+      const liked = likedSongs.some(s => s.id === t.id);
+      document.getElementById('likeBtn').classList.toggle('liked', liked);
+
+      // Animate album art
+      document.getElementById('playerArt').style.animation = 'none';
+      setTimeout(() => { document.getElementById('playerArt').style.animation = ''; }, 10);
+    }
+
+    function updatePlayBtn() {
+      document.getElementById('playIcon').classList.toggle('hidden', isPlaying);
+      document.getElementById('pauseIcon').classList.toggle('hidden', !isPlaying);
+    }
+
+    // ─── LIKES ────────────────────────────────────────────────────────────────
+    function toggleLike(id, e) {
+      e.stopPropagation();
+      // Find track from all possible sources
+      const allCards = document.querySelectorAll('.track-card, .track-row');
+      let t = null;
+      // Try queue
+      t = queue.find(q => q.id === id);
+      if (!t) t = likedSongs.find(s => s.id === id);
+
+      const idx = likedSongs.findIndex(s => s.id === id);
+      if (idx === -1) {
+        if (t) { likedSongs.push(t); showToast('Added to Liked Songs 💚'); }
+      } else {
+        likedSongs.splice(idx, 1);
+        showToast('Removed from Liked Songs');
+      }
+      localStorage.setItem('sonicflow_liked', JSON.stringify(likedSongs));
+      saveLiked();
+      refreshLikeButtons(id);
+    }
+
+    function toggleLikeCurrent() {
+      if (!currentTrack) return;
+      const id = currentTrack.id;
+      const idx = likedSongs.findIndex(s => s.id === id);
+      if (idx === -1) {
+        likedSongs.push(currentTrack);
+        showToast('Added to Liked Songs 💚');
+      } else {
+        likedSongs.splice(idx, 1);
+        showToast('Removed from Liked Songs');
+      }
+      saveLiked();
+      refreshLikeButtons(id);
+      const liked = likedSongs.some(s => s.id === id);
+      document.getElementById('likeBtn').classList.toggle('liked', liked);
+    }
+
+    function saveLiked() {
+      localStorage.setItem('sonicflow_liked', JSON.stringify(likedSongs));
+      document.getElementById('likedCount').textContent = likedSongs.length + ' song' + (likedSongs.length !== 1 ? 's' : '') + ' saved';
+    }
+
+    function refreshLikeButtons(id) {
+      const liked = likedSongs.some(s => s.id === id);
+      document.querySelectorAll(`.like-btn`).forEach(btn => {
+        const card = btn.closest('[onclick]');
+        if (card && card.getAttribute('onclick')?.includes(id)) {
+          btn.classList.toggle('liked', liked);
+          btn.querySelector('svg').setAttribute('fill', liked ? 'currentColor' : 'none');
+        }
+      });
+    }
+
+    function renderLiked() {
+      document.getElementById('likedCount').textContent = likedSongs.length + ' song' + (likedSongs.length !== 1 ? 's' : '') + ' saved';
+      if (!likedSongs.length) {
+        document.getElementById('likedList').innerHTML = `<div class="empty-state"><div class="empty-icon">💚</div><p>Songs you like will appear here</p></div>`;
+        return;
+      }
+      renderList(likedSongs, 'likedList');
+      queue = likedSongs.filter(t => t.preview_url);
+      queueIndex = 0;
+    }
+
+    // ─── UTILS ────────────────────────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function msToTime(ms) { return secToTime(ms / 1000); }
+    function secToTime(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      t.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.classList.add('hidden'), 300); }, 2500);
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+    autoConnect();
+  </script>
+</body>
+</html>
